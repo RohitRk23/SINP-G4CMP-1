@@ -87,8 +87,8 @@ fInverse = fOrient.inverse();
 
   delete visManager;
   delete runManager;
-  std::cout<<"The file is finish"<<std::endl;
+  //std::cout<<"The file is finish"<<std::endl;
   return 0;
-  std::cout<<"The file is finish"<<std::endl;
+  //std::cout<<"The file is finish"<<std::endl;
   
 }
