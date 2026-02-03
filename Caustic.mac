@@ -1,0 +1,21 @@
+/run/numberOfThreads 14
+/run/initialize
+
+/gps/energy 0.0075 eV
+/gps/number 1
+/gps/ang/type iso
+/gps/pos/centre 0.0 0.0 0.0 cm
+/gps/pos/type Volume
+/gps/pos/shape Cylinder
+/gps/pos/radius 2 mm
+/gps/pos/halfz 2 mm
+
+#/vis/open OGL
+#/vis/drawVolume
+#/vis/viewer/set/style surface
+#/vis/scene/add/trajectories smooth
+#/vis/scene/endOfEventAction accumulate 10
+
+/process/inactivate phononScattering
+/process/inactivate phononDownconversion
+/run/beamOn 10000000
