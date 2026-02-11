@@ -20,8 +20,8 @@
 #include "Caustic_PhononDetectorConstruction.hh"
 
 #include "G4LatticePhysical.hh"
-
 #include "FTFP_BERT.hh"
+#include "QGSP_BIC_HP.hh"
 #include "G4CMPPhysics.hh"
 
 int main(int argc,char** argv)
@@ -55,7 +55,22 @@ fInverse = fOrient.inverse();
   physics2->RegisterPhysics(new G4CMPPhysics);
   physics2->SetCuts();
   runManager->SetUserInitialization(physics2);
+
+  QGSP_BIC_HP* physics3 = new QGSP_BIC_HP;
+  physics3->RegisterPhysics(new G4CMPPhysics);
+  physics3->SetCuts();
+  runManager->SetUserInitialization(physics3);
+
+  // // Use a Modular Physics List (FTFP_BERT is one)
+  // G4VModularPhysicsList* physicsList = new FTFP_BERT();
+
+  // // Register the G4CMP Physics modules into the main list
+  // physicsList->RegisterPhysics(new G4CMPPhysics());
   
+  // IMPORTANT: You also need the Lattice Physics for propagation
+  //physicsList->RegisterPhysics(new G4CMPLatticePhysics());
+
+  //runManager->SetUserInitialization(physicsList);
   // Set user action classes (different for Geant4 10.0)
   //
   runManager->SetUserInitialization(new Caustic_PhononActionInitialization);

@@ -97,7 +97,7 @@ void Caustic_PhononDetectorConstruction::Caustic_DefineMaterials()
 {
   G4NistManager* nistManager = G4NistManager::Instance();
 
-  fLiquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected
+  fLiquidHelium = nistManager->FindOrBuildMaterial("G4_Galactic"); // to be corrected
   fBolometer = nistManager->FindOrBuildMaterial("G4_W");
 
   // Defining the materials for phonon propagation
