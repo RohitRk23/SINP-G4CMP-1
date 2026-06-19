@@ -97,7 +97,7 @@ void RunAction::BeginOfRunAction(const G4Run*)
     analysisManager->CreateNtupleDColumn("PhotonEn");    // Col 0
     analysisManager->FinishNtuple(1); // Explicitly ID this as 1
 // }
-    // Create Ntuple (We assign this Ntuple an ID of 0)
+    // Create Ntuple for Pimary Tracing (We assign this Ntuple an ID of 2)
     analysisManager->CreateNtuple("NeutronSteps", "Step by step primary neutron tracking");
     analysisManager->CreateNtupleIColumn("EventID");     // Column 0
     analysisManager->CreateNtupleIColumn("StepNumber");  // Column 1
@@ -107,6 +107,17 @@ void RunAction::BeginOfRunAction(const G4Run*)
     analysisManager->CreateNtupleDColumn("KinEnergy");   // Column 5
     analysisManager->CreateNtupleDColumn("EnergyDeposit");   // Column 6
     analysisManager->FinishNtuple(2);
+
+    // Create Ntuple for Secondary Tracing (We assign this Ntuple an ID of 3)
+    analysisManager->CreateNtuple("Secondaries", "Step by step Secondary tracking");
+    analysisManager->CreateNtupleIColumn("EventID");     // Column 0
+    analysisManager->CreateNtupleIColumn("ParentTrackID");  // Column 1
+    analysisManager->CreateNtupleIColumn("secTrackID"); // Column 2
+    analysisManager->CreateNtupleSColumn("secName"); // Column 3
+    analysisManager->CreateNtupleDColumn("secKinE"); // Column 4
+    // analysisManager->CreateNtupleDColumn("KinEnergy");   // Column 5
+    analysisManager->CreateNtupleSColumn("creatorProcess");   // Column 6
+    analysisManager->FinishNtuple(3);
 //--------------------For PMT------------------------//
   if(analysisManager->IsActive())
   {

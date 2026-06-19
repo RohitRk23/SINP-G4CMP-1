@@ -35,6 +35,8 @@
 #include "globals.hh"
 #include "G4UserSteppingAction.hh"
 
+class G4LogicalVolume;
+
 class SteppingAction : public G4UserSteppingAction
 {
  public:
@@ -46,6 +48,7 @@ class SteppingAction : public G4UserSteppingAction
 
  private:
   G4int fVerbose;
+  G4LogicalVolume* fScoringVolume; // To keep track of the scoring volume
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

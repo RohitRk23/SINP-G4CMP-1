@@ -55,10 +55,10 @@ int main(int argc, char** argv)
   if(argc == 1)
     ui = new G4UIExecutive(argc, argv);
   // opening root file
-  ROOT::EnableThreadSafety();
-  TFile* file = TFile::Open("/home/ubuntu/SINP-G4CMP/Scintillation2/preliminaryHistograms_Neutrons_Nominal_LABCATII_1_1_26_lab_withoutErrorBars.root");
-  file->Close();
-  delete file;
+  // ROOT::EnableThreadSafety();
+  // TFile* file = TFile::Open("/home/ubuntu/SINP-G4CMP/Scintillation2/preliminaryHistograms_Neutrons_Nominal_LABCATII_1_1_26_lab_withoutErrorBars.root");
+  // file->Close();
+  // delete file;
 
   auto runManager = G4RunManagerFactory::CreateRunManager();
 

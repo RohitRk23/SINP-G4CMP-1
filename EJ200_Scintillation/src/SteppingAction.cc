@@ -47,6 +47,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 #include "G4RunManager.hh"
+#include "DetectorConstruction.hh"
+#include "G4LogicalVolume.hh"
 //To Store the Energy Deposit per event 
 #include "EventAction.hh"
 
@@ -73,43 +75,129 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   G4StepPoint* endPoint   = step->GetPostStepPoint();
   G4StepPoint* startPoint = step->GetPreStepPoint();
 
-    // Filter: Only look at the primary particle (Track ID == 1)
-    if (track->GetTrackID() == 1) 
-    {
+    // // Filter: Only look at the primary particle (Track ID == 1)
+    // if (track->GetTrackID() == 1) 
+    // {
         
-        const G4VProcess* process = endPoint->GetProcessDefinedStep();
+    //     const G4VProcess* process = endPoint->GetProcessDefinedStep();
 
-        if (process != nullptr) 
-        {
-            G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-            G4String processName = process->GetProcessName();
-            G4int processTypeID = process->GetProcessType();
-            G4int subTypeID = process->GetProcessSubType();
+    //     if (process != nullptr) 
+    //     {
+    //         G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+    //         G4String processName = process->GetProcessName();
+    //         G4int processTypeID = process->GetProcessType();
+    //         G4int subTypeID = process->GetProcessSubType();
 
-            G4int stepNumber = track->GetCurrentStepNumber();
-            G4double kinEnergy = endPoint->GetKineticEnergy(); // Energy after step
-            G4double eDep = step->GetTotalEnergyDeposit();
-            // G4cout << "Step #" << stepNumber 
-            //        << " | Process: " << processName 
-            //        << " | Type ID: " << processTypeID 
-            //        << " | SubType ID: " << subTypeID
-            //        << " | Neutron KinE: " << kinEnergy / MeV << " MeV" 
-            //        << G4endl;
+    //         G4int stepNumber = track->GetCurrentStepNumber();
+    //         G4double kinEnergy = endPoint->GetKineticEnergy(); // Energy after step
+    //         G4double eDep = step->GetTotalEnergyDeposit();
+    //         // G4cout << "Step #" << stepNumber 
+    //         //        << " | Process: " << processName 
+    //         //        << " | Type ID: " << processTypeID 
+    //         //        << " | SubType ID: " << subTypeID
+    //         //        << " | Neutron KinE: " << kinEnergy / MeV << " MeV" 
+    //         //        << G4endl;
 
-            analysisMan->FillNtupleIColumn(2, 0, eventID);
-            analysisMan->FillNtupleIColumn(2, 1, stepNumber);
-            analysisMan->FillNtupleSColumn(2, 2, processName);
-            analysisMan->FillNtupleIColumn(2, 3, processTypeID);
-            analysisMan->FillNtupleIColumn(2, 4, subTypeID);
-            analysisMan->FillNtupleDColumn(2, 5, kinEnergy);
-            analysisMan->FillNtupleDColumn(2, 6, eDep);
+    //         analysisMan->FillNtupleIColumn(2, 0, eventID);
+    //         analysisMan->FillNtupleIColumn(2, 1, stepNumber);
+    //         analysisMan->FillNtupleSColumn(2, 2, processName);
+    //         analysisMan->FillNtupleIColumn(2, 3, processTypeID);
+    //         analysisMan->FillNtupleIColumn(2, 4, subTypeID);
+    //         analysisMan->FillNtupleDColumn(2, 5, kinEnergy);
+    //         analysisMan->FillNtupleDColumn(2, 6, eDep);
 
-            analysisMan->AddNtupleRow(2);
+    //         analysisMan->AddNtupleRow(2);
                    
-        }
+    //     }
+    // }
+
+// 1. Fetch the scoring volume pointer (only happens once per run)
+    if (!fScoringVolume) {
+        const DetectorConstruction* detConstruction = static_cast<const DetectorConstruction*>
+            (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+        fScoringVolume = detConstruction->GetScoringVolume();
     }
 
+    // 2. Get the logical volume where this step started
+    G4LogicalVolume* currentVolume = startPoint->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
 
+    // 3. Only proceed if the step occurred inside your crystal
+    if (currentVolume == fScoringVolume) 
+    {
+
+
+        // Filter: Only look at the primary particle (Track ID == 1)
+        if (track->GetTrackID() == 1) 
+        {
+            
+            const G4VProcess* process = endPoint->GetProcessDefinedStep();
+        
+            if (process != nullptr) 
+            {
+                G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+                G4String processName = process->GetProcessName();
+                G4int processTypeID = process->GetProcessType();
+                G4int subTypeID = process->GetProcessSubType();
+            
+                G4int stepNumber = track->GetCurrentStepNumber();
+                G4double kinEnergy = endPoint->GetKineticEnergy(); // Energy after step
+                G4double eDep = step->GetTotalEnergyDeposit();
+                // G4cout << "Step #" << stepNumber 
+                //        << " | Process: " << processName 
+                //        << " | Type ID: " << processTypeID 
+                //        << " | SubType ID: " << subTypeID
+                //        << " | Neutron KinE: " << kinEnergy / MeV << " MeV" 
+                //        << G4endl;
+            
+                analysisMan->FillNtupleIColumn(2, 0, eventID);
+                analysisMan->FillNtupleIColumn(2, 1, stepNumber);
+                analysisMan->FillNtupleSColumn(2, 2, processName);
+                analysisMan->FillNtupleIColumn(2, 3, processTypeID);
+                analysisMan->FillNtupleIColumn(2, 4, subTypeID);
+                analysisMan->FillNtupleDColumn(2, 5, kinEnergy);
+                analysisMan->FillNtupleDColumn(2, 6, eDep);
+            
+                analysisMan->AddNtupleRow(2);
+                       
+            }
+        }
+        // 4. Extract any secondaries born during this specific step
+        const std::vector<const G4Track*>* secondaries = step->GetSecondaryInCurrentStep();
+
+        if (secondaries != nullptr && !secondaries->empty()) 
+        {
+            G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+            G4int parentTrackID = track->GetTrackID(); // ID of the particle that caused the interaction
+
+            // Loop through all the newly created particles
+            for (size_t i = 0; i < secondaries->size(); ++i) 
+            {
+                const G4Track* secTrack = (*secondaries)[i];
+                G4String secName = secTrack->GetDefinition()->GetParticleName();
+
+                // OPTIONAL: Ignore optical photons to keep your ROOT file size manageable
+                // if (secName == "opticalphoton") continue; 
+
+                G4int secTrackID = secTrack->GetTrackID();
+                G4double secKinE = secTrack->GetKineticEnergy();
+                
+                G4String creatorProcess = "";
+                if (secTrack->GetCreatorProcess() != nullptr) {
+                    creatorProcess = secTrack->GetCreatorProcess()->GetProcessName();
+                }
+
+                // 5. Save to a new Ntuple (ID = 3)
+                analysisMan->FillNtupleIColumn(3, 0, eventID);
+                analysisMan->FillNtupleIColumn(3, 1, parentTrackID);
+                analysisMan->FillNtupleIColumn(3, 2, secTrackID);
+                analysisMan->FillNtupleSColumn(3, 3, secName);
+                analysisMan->FillNtupleDColumn(3, 4, secKinE);
+                analysisMan->FillNtupleSColumn(3, 5, creatorProcess);
+                
+                analysisMan->AddNtupleRow(3);
+            }
+        }
+    }
   const G4DynamicParticle* theParticle = track->GetDynamicParticle();
   const G4ParticleDefinition* particleDef =
     theParticle->GetParticleDefinition();

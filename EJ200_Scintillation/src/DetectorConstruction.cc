@@ -167,6 +167,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4VSolid* tank_box = new G4Tubs("Tank", 0.*cm, 2.0*cm, 2.0*cm, 0.*deg, 360.*deg);
 
   fTank_LV = new G4LogicalVolume(tank_box, fTankMaterial, "Tank", 0, 0, 0);
+  fScoringVolume = fTank_LV; // To make the scoring volume accessible to the SteppingAction class
 
   fTank = new G4PVPlacement(0, G4ThreeVector(), fTank_LV, "Tank", fWorld_LV, false, 0);
 

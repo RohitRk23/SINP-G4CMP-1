@@ -53,7 +53,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   G4double GetTankXSize() { return fTank_x; }
 
   G4OpticalSurface* GetSurface(void) { return fSurface; }
-
+  G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }// To make the scoring volume accessible to the SteppingAction class
   void SetSurfaceFinish(const G4OpticalSurfaceFinish finish)
   {
     fSurface->SetFinish(finish);
@@ -135,6 +135,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   G4LogicalVolume* fWorld_LV;
   G4LogicalVolume* fCopyWorld_LV; // For Reflecting Surface
   G4LogicalVolume* fTank_LV;
+  G4LogicalVolume* fScoringVolume; // To make the scoring volume accessible to the SteppingAction class
 
   G4Material* fWorldMaterial;
   G4Material* fCopyWorldMaterial; // For Reflecting Surface
