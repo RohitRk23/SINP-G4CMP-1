@@ -129,19 +129,22 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         // Filter: Only look at the primary particle (Track ID == 1)
         if (track->GetTrackID() == 1) 
         {
-            
+
             const G4VProcess* process = endPoint->GetProcessDefinedStep();
         
             if (process != nullptr) 
             {
-                G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
                 G4String processName = process->GetProcessName();
-                G4int processTypeID = process->GetProcessType();
-                G4int subTypeID = process->GetProcessSubType();
+                  if (processName != "Transportation")
+
+              {
+                G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+                // G4int processTypeID = process->GetProcessType();
+                // G4int subTypeID = process->GetProcessSubType();
             
-                G4int stepNumber = track->GetCurrentStepNumber();
+                // G4int stepNumber = track->GetCurrentStepNumber();
                 G4double kinEnergy = endPoint->GetKineticEnergy(); // Energy after step
-                G4double eDep = step->GetTotalEnergyDeposit();
+                // G4double eDep = step->GetTotalEnergyDeposit();
                 // G4cout << "Step #" << stepNumber 
                 //        << " | Process: " << processName 
                 //        << " | Type ID: " << processTypeID 
@@ -150,54 +153,105 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
                 //        << G4endl;
             
                 analysisMan->FillNtupleIColumn(2, 0, eventID);
-                analysisMan->FillNtupleIColumn(2, 1, stepNumber);
-                analysisMan->FillNtupleSColumn(2, 2, processName);
-                analysisMan->FillNtupleIColumn(2, 3, processTypeID);
-                analysisMan->FillNtupleIColumn(2, 4, subTypeID);
-                analysisMan->FillNtupleDColumn(2, 5, kinEnergy);
-                analysisMan->FillNtupleDColumn(2, 6, eDep);
+                // analysisMan->FillNtupleIColumn(2, 1, stepNumber);
+                analysisMan->FillNtupleSColumn(2, 1, processName);
+                // analysisMan->FillNtupleIColumn(2, 2, processTypeID);
+                // analysisMan->FillNtupleIColumn(2, 3, subTypeID);
+                analysisMan->FillNtupleDColumn(2, 2, kinEnergy);
+                // analysisMan->FillNtupleDColumn(2, 3, eDep);
             
                 analysisMan->AddNtupleRow(2);
-                       
-            }
+
+              }
+           }
         }
-        // 4. Extract any secondaries born during this specific step
+        // // 4. Extract any secondaries born during this specific step
+        // const std::vector<const G4Track*>* secondaries = step->GetSecondaryInCurrentStep();
+
+        // if (secondaries != nullptr && !secondaries->empty()) 
+        // {
+        //     G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+        //     G4int parentTrackID = track->GetTrackID(); // ID of the particle that caused the interaction
+
+        //     // Loop through all the newly created particles
+        //     for (size_t i = 0; i < secondaries->size(); ++i) 
+        //     {
+        //         const G4Track* secTrack = (*secondaries)[i];
+        //         G4String secName = secTrack->GetDefinition()->GetParticleName();
+
+        //         // OPTIONAL: Ignore optical photons to keep your ROOT file size manageable
+        //         // if (secName == "opticalphoton") continue; 
+
+        //         G4int secTrackID = secTrack->GetTrackID();
+        //         G4double secKinE = secTrack->GetKineticEnergy();
+                
+        //         G4String creatorProcess = "";
+        //         if (secTrack->GetCreatorProcess() != nullptr) {
+        //             creatorProcess = secTrack->GetCreatorProcess()->GetProcessName();
+        //         }
+
+        //         // 5. Save to a new Ntuple (ID = 3)
+        //         analysisMan->FillNtupleIColumn(3, 0, eventID);
+        //         analysisMan->FillNtupleIColumn(3, 1, parentTrackID);
+        //         analysisMan->FillNtupleIColumn(3, 2, secTrackID);
+        //         analysisMan->FillNtupleSColumn(3, 3, secName);
+        //         analysisMan->FillNtupleDColumn(3, 4, secKinE);
+        //         analysisMan->FillNtupleSColumn(3, 5, creatorProcess);
+                
+        //         analysisMan->AddNtupleRow(3);
+        //     }
+        // }
+      // }
+      //------------To check the details of the optical photons only (within Crystal) ------------------//
+      // 4. Extract any secondaries born during this specific step
         const std::vector<const G4Track*>* secondaries = step->GetSecondaryInCurrentStep();
 
         if (secondaries != nullptr && !secondaries->empty()) 
         {
-            G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-            G4int parentTrackID = track->GetTrackID(); // ID of the particle that caused the interaction
+            G4int numPhotons = 0;
+            G4String photonCreatorProcess = "Unknown";
 
-            // Loop through all the newly created particles
+            // Loop through all newly created particles in this step
             for (size_t i = 0; i < secondaries->size(); ++i) 
             {
                 const G4Track* secTrack = (*secondaries)[i];
-                G4String secName = secTrack->GetDefinition()->GetParticleName();
-
-                // OPTIONAL: Ignore optical photons to keep your ROOT file size manageable
-                // if (secName == "opticalphoton") continue; 
-
-                G4int secTrackID = secTrack->GetTrackID();
-                G4double secKinE = secTrack->GetKineticEnergy();
                 
-                G4String creatorProcess = "";
-                if (secTrack->GetCreatorProcess() != nullptr) {
-                    creatorProcess = secTrack->GetCreatorProcess()->GetProcessName();
+                // We ONLY care if the secondary is an optical photon
+                if (secTrack->GetDefinition()->GetParticleName() == "opticalphoton") 
+                {
+                    numPhotons++;
+                    
+                    // We only need to grab the process name once, since all photons 
+                    // born in this exact step will have the exact same creator process.
+                    if (numPhotons == 1 && secTrack->GetCreatorProcess() != nullptr) {
+                        photonCreatorProcess = secTrack->GetCreatorProcess()->GetProcessName();
+                    }
                 }
+            }
 
-                // 5. Save to a new Ntuple (ID = 3)
-                analysisMan->FillNtupleIColumn(3, 0, eventID);
-                analysisMan->FillNtupleIColumn(3, 1, parentTrackID);
-                analysisMan->FillNtupleIColumn(3, 2, secTrackID);
-                analysisMan->FillNtupleSColumn(3, 3, secName);
-                analysisMan->FillNtupleDColumn(3, 4, secKinE);
-                analysisMan->FillNtupleSColumn(3, 5, creatorProcess);
+            // 5. If this step generated optical photons, save the data!
+            if (numPhotons > 0) 
+            {
+                // G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
                 
+                // track->GetTrackID() belongs to the particle currently taking the step.
+                // Because this particle just created these photons, it is the Parent!
+                // G4int parentTrackID = track->GetTrackID(); 
+                G4String parentName = track->GetDefinition()->GetParticleName();
+                // G4int parentPDG = track->GetDefinition()->GetPDGEncoding();
+                // Save to Ntuple (ID = 3)
+                // analysisMan->FillNtupleIColumn(3, 0, eventID);
+                // analysisMan->FillNtupleIColumn(2, 1, parentTrackID);
+                analysisMan->FillNtupleSColumn(3, 0, photonCreatorProcess);
+                // analysisMan->FillNtupleIColumn(3, 2, numPhotons); // Highly recommended to keep this!
+                analysisMan->FillNtupleSColumn(3, 1, parentName);
+                // analysisMan->FillNtupleIColumn(3, 2, parentPDG);  
                 analysisMan->AddNtupleRow(3);
             }
         }
-    }
+    } // End of Scoring Volume check
+      //------------To check the details of the optical photons only (within Crystal) ------------------//
+  //  }
   const G4DynamicParticle* theParticle = track->GetDynamicParticle();
   const G4ParticleDefinition* particleDef =
     theParticle->GetParticleDefinition();

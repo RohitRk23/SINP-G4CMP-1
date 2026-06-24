@@ -5,6 +5,8 @@
 #include "g4analysis.hh" 
 #include <iostream>
 #include "G4EventManager.hh"
+#include "G4RunManager.hh"
+#include "G4Run.hh"
 
 // EventAction::EventAction()
 //   : G4UserEventAction(), fPMTHCID(-1)
@@ -34,7 +36,19 @@ void EventAction::EndOfEventAction(const G4Event* event) {
         analysisMan->FillH1(23, fTotalEnergy); 
     }
     // Fill the columns in the exact order defined in RunAction
-    analysisMan->FillNtupleIColumn(0,0, event->GetEventID());
+    G4int localEventID = event->GetEventID();
+
+    //  Get the Run ID that you injected via sed
+    G4int runID = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
+
+    // Calculate the continuous Global Event ID
+    // If iteration starts at 0: globalEventID = (runID * eventsPerRun) + localEventID
+    // If iteration starts at 1: globalEventID = ((runID - 1) * eventsPerRun) + localEventID
+    G4int globalEventID = (runID * 100) + localEventID;
+
+
+    analysisMan->FillNtupleIColumn(0,0, globalEventID);
+    // analysisMan->FillNtupleIColumn(0,0, event->GetEventID());
     analysisMan->FillNtupleIColumn(0,1, fHitCount);
     analysisMan->FillNtupleDColumn(0,2, fTotalEnergy);
     // analysisMan->FillNtupleDColumn(3, feachphotonEnergy);
