@@ -8,12 +8,12 @@
 
 void LogPlotEnergyperEvent() {
     // 1. Open your file and get the Ntuple
-    TFile *f = new TFile("PerEventData_100keV.root", "READ");
+    TFile *f = new TFile("/home/rohit-kumar/softwares/EJ200-build/test.root", "READ");
     TTree *tree = (TTree*)f->Get("Hits"); // "Hits" is the name from your RunAction
 
     // 2. Your Log Binning Logic
     const Int_t nbins = 1000;
-    Double_t xmin = 1e-5, xmax = 1e2; // Adjusted for MeV or keV range
+    Double_t xmin = 1e-5, xmax = 1e1; // Adjusted for MeV or keV range
     Double_t logxmin = TMath::Log10(xmin);
     Double_t logxmax = TMath::Log10(xmax);
     Double_t binwidth = (logxmax-logxmin)/nbins;
@@ -37,5 +37,5 @@ void LogPlotEnergyperEvent() {
     h->Draw("HIST");
 
     gPad->SetLogx(); // Apply log scale to the X-axis
-    gPad->SetLogy(); // Log scale on Y is also common for flux spectrums
+//    gPad->SetLogy(); // Log scale on Y is also common for flux spectrums
 }

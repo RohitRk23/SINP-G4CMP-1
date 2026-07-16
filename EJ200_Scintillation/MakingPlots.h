@@ -50,9 +50,9 @@ MakingPlots::MakingPlots(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/home/ubuntu/RohitWork/EJ200_Scintillation-build/Neutron_step_data.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/home/rohit-kumar/softwares/EJ200-build/test.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/home/ubuntu/RohitWork/EJ200_Scintillation-build/Neutron_step_data.root");
+         f = new TFile("/home/rohit-kumar/softwares/EJ200-build/test.root");
       }
       f->GetObject("Hits",tree);
 

@@ -39,6 +39,7 @@
 //To get random energy from histograms
 #include "TFile.h"
 #include "TH1D.h"
+#include <vector>
 
 class G4Event;
 class PrimaryGeneratorMessenger;
@@ -70,6 +71,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 //To get random energy from histograms
   TFile* fInputFile;
   TH1D*  fRecoilHist;
+  std::vector<double> fE;
+  std::vector<double> fCDF;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

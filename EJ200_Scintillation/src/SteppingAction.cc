@@ -75,42 +75,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   G4StepPoint* endPoint   = step->GetPostStepPoint();
   G4StepPoint* startPoint = step->GetPreStepPoint();
 
-    // // Filter: Only look at the primary particle (Track ID == 1)
-    // if (track->GetTrackID() == 1) 
-    // {
-        
-    //     const G4VProcess* process = endPoint->GetProcessDefinedStep();
-
-    //     if (process != nullptr) 
-    //     {
-    //         G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-    //         G4String processName = process->GetProcessName();
-    //         G4int processTypeID = process->GetProcessType();
-    //         G4int subTypeID = process->GetProcessSubType();
-
-    //         G4int stepNumber = track->GetCurrentStepNumber();
-    //         G4double kinEnergy = endPoint->GetKineticEnergy(); // Energy after step
-    //         G4double eDep = step->GetTotalEnergyDeposit();
-    //         // G4cout << "Step #" << stepNumber 
-    //         //        << " | Process: " << processName 
-    //         //        << " | Type ID: " << processTypeID 
-    //         //        << " | SubType ID: " << subTypeID
-    //         //        << " | Neutron KinE: " << kinEnergy / MeV << " MeV" 
-    //         //        << G4endl;
-
-    //         analysisMan->FillNtupleIColumn(2, 0, eventID);
-    //         analysisMan->FillNtupleIColumn(2, 1, stepNumber);
-    //         analysisMan->FillNtupleSColumn(2, 2, processName);
-    //         analysisMan->FillNtupleIColumn(2, 3, processTypeID);
-    //         analysisMan->FillNtupleIColumn(2, 4, subTypeID);
-    //         analysisMan->FillNtupleDColumn(2, 5, kinEnergy);
-    //         analysisMan->FillNtupleDColumn(2, 6, eDep);
-
-    //         analysisMan->AddNtupleRow(2);
-                   
-    //     }
-    // }
-
 // 1. Fetch the scoring volume pointer (only happens once per run)
     if (!fScoringVolume) {
         const DetectorConstruction* detConstruction = static_cast<const DetectorConstruction*>
@@ -156,8 +120,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
                 // analysisMan->FillNtupleIColumn(2, 1, stepNumber);
                 analysisMan->FillNtupleSColumn(2, 1, processName);
                 // analysisMan->FillNtupleIColumn(2, 2, processTypeID);
-                // analysisMan->FillNtupleIColumn(2, 3, subTypeID);
-                analysisMan->FillNtupleDColumn(2, 2, kinEnergy);
+                // analysisMan->FillNtupleIColumn(2, 2, subTypeID);
+                analysisMan->FillNtupleDColumn(2, 3, kinEnergy);
                 // analysisMan->FillNtupleDColumn(2, 3, eDep);
             
                 analysisMan->AddNtupleRow(2);
@@ -203,7 +167,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         // }
       // }
       //------------To check the details of the optical photons only (within Crystal) ------------------//
-      // 4. Extract any secondaries born during this specific step
+      //  Extract any secondaries born during this specific step
         const std::vector<const G4Track*>* secondaries = step->GetSecondaryInCurrentStep();
 
         if (secondaries != nullptr && !secondaries->empty()) 
@@ -242,10 +206,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
                 // Save to Ntuple (ID = 3)
                 // analysisMan->FillNtupleIColumn(3, 0, eventID);
                 // analysisMan->FillNtupleIColumn(2, 1, parentTrackID);
-                analysisMan->FillNtupleSColumn(3, 0, photonCreatorProcess);
+                // analysisMan->FillNtupleSColumn(3, 0, photonCreatorProcess);
                 // analysisMan->FillNtupleIColumn(3, 2, numPhotons); // Highly recommended to keep this!
-                analysisMan->FillNtupleSColumn(3, 1, parentName);
-                // analysisMan->FillNtupleIColumn(3, 2, parentPDG);  
+                analysisMan->FillNtupleSColumn(3, 0, parentName);
+                // analysisMan->FillNtupleIColumn(3, 1, parentPDG);  
                 analysisMan->AddNtupleRow(3);
             }
         }
@@ -275,11 +239,20 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     if(preVol != "PMT_PV" && postVol == "PMT_PV")
     {
       G4double photonEn = track->GetTotalEnergy();
+
+      // --- Extract Timing Information ---
+      G4double arrivalTime  = track->GetGlobalTime();  // Final time (when it hit PMT)
+      G4double transitTime  = track->GetLocalTime();   // Time spent traveling (Final - Initial)
+
       auto analysisMan = G4AnalysisManager::Instance();
       if (photonEn>0)
       {
       // Fill Ntuple 1 (Photons)
       analysisMan->FillNtupleDColumn(1, 0,photonEn); // (NtupleID, ColumnID, Value)
+      // --- Add times to the Ntuple ---
+      analysisMan->FillNtupleDColumn(1, 1, arrivalTime); 
+      // analysisMan->FillNtupleDColumn(1, 2, transitTime);
+
       analysisMan->AddNtupleRow(1);                   // Tell it to save a row in Ntuple 1
      }
       

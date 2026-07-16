@@ -243,7 +243,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   EJ200MPT->AddConstProperty("SCINTILLATIONYIELD", 8000. / MeV);
   EJ200MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
-  EJ200MPT->AddConstProperty("SCINTILLATIONRISETIME1", 0.1*ns);
+  EJ200MPT->AddConstProperty("SCINTILLATIONRISETIME1", 0.9*ns);
   EJ200MPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 2.1*ns);
   EJ200MPT->AddConstProperty("SCINTILLATIONYIELD1",1.0);
   

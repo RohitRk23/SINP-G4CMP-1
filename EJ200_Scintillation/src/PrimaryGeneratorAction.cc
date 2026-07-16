@@ -65,9 +65,26 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fPolarized       = false;
   fPolarization    = 0.;
 //To get random energy from histograms
-  // fInputFile = TFile::Open("/home/ubuntu/SINP-G4CMP/Scintillation2/preliminaryHistograms_Neutrons_Nominal_LABCATII_1_1_26_lab_withoutErrorBars.root");
-  // fRecoilHist = (TH1D*)fInputFile->Get("histNeutronEnergy");
+  fInputFile = TFile::Open("/home/rohit-kumar/softwares/EJ200-build/Gamma_flux.root");
+  fRecoilHist = (TH1D*)fInputFile->Get("hTest");
 
+  // For CDF to get random energy from histograms
+    // std::vector<double> E, CDF;
+    // double sum = 0.0;
+    // for (int i = 1; i <= fRecoilHist->GetNbinsX(); i++)
+    // {
+    //   double w = fRecoilHist->GetBinContent(i);
+    //   if (w <= 0) continue;
+  
+    //   fE.push_back(fRecoilHist->GetBinCenter(i));
+    //   sum += w;
+    //   fCDF.push_back(sum);
+  
+    // }
+    // for (auto &x : fCDF)
+    // {
+    //   x /= sum;
+    // }
   // default kinematic
   //
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -75,10 +92,10 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticleTime(0.0 * ns);
-  fParticleGun->SetParticlePosition(
-    G4ThreeVector(0.0 * cm, 0.0 * cm, 0.0 * cm));
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(1., 0., 0.));
-  fParticleGun->SetParticleEnergy(500.0 * keV);
+  // fParticleGun->SetParticlePosition(
+  //   G4ThreeVector(0.0 * cm, 0.0 * cm, 0.0 * cm));
+  // fParticleGun->SetParticleMomentumDirection(G4ThreeVector(1., 0., 0.));
+  // fParticleGun->SetParticleEnergy(500.0 * keV);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -86,10 +103,10 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   //To get random energy from histograms
-  // if(fInputFile) {
-  //       fInputFile->Close();
-  //       delete fInputFile;
-  //  }
+  if(fInputFile) {
+        fInputFile->Close();
+        delete fInputFile;
+   }
    //--------------------------------------------------------------
   delete fParticleGun;
   delete fGunMessenger;
@@ -100,13 +117,13 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
      // random position in volume
-    // G4double worldHalf = 8.0*cm;
+    G4double worldHalf = 8.0*cm;
 
-    // G4double x0 = (2*G4UniformRand()-1)*worldHalf;
-    // G4double y0 = (2*G4UniformRand()-1)*worldHalf;
-    // G4double z0 = (2*G4UniformRand()-1)*worldHalf;
+    G4double x0 = (2*G4UniformRand()-1)*worldHalf;
+    G4double y0 = (2*G4UniformRand()-1)*worldHalf;
+    G4double z0 = (2*G4UniformRand()-1)*worldHalf;
 
-    // fParticleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
+    fParticleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
 // //    fParticleGun->SetParticlePosition(G4ThreeVector(0,0,-7*cm));
  if(fRandomDirection)
  {
@@ -119,17 +136,28 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4double z     = std::sin(theta) * std::cos(phi);
     G4ThreeVector dir(x, y, z);
     fParticleGun->SetParticleMomentumDirection(dir);
-   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,1,0));
+   //fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,1,0));
  }
 //To get random energy from histograms
-    //  const G4double recoilEnergy = fRecoilHist->GetRandom()*MeV;
-    //         fParticleGun->SetParticleEnergy(recoilEnergy);
-    //       // std::cout << "Recoil energy: " << recoilEnergy/MeV << " MeV" << G4endl;
-    // // Store it in EventAction for this specific event
-    // EventAction* eventAction = (EventAction*)G4EventManager::GetEventManager()->GetUserEventAction();
-    // if(eventAction) {
-    //     eventAction->SetInitialEnergy(recoilEnergy);
-    // }
+     const G4double recoilEnergy = fRecoilHist->GetRandom()*MeV;
+            fParticleGun->SetParticleEnergy(recoilEnergy);
+          // std::cout << "Recoil energy: " << recoilEnergy/MeV << " MeV" << G4endl;
+      // double r = G4UniformRand();
+
+      // auto it = std::lower_bound(fCDF.begin(), fCDF.end(), r);
+
+      // //size_t idx = std::distance(fCDF.begin(), it);
+      // size_t idx = (it == fCDF.end()) ? (fCDF.size() - 1)
+      //                          : std::distance(fCDF.begin(), it);
+
+      // double recoilEnergy = fE[idx]*MeV;
+      // fParticleGun->SetParticleEnergy(recoilEnergy);
+
+    // Store it in EventAction for this specific event
+    EventAction* eventAction = (EventAction*)G4EventManager::GetEventManager()->GetUserEventAction();
+    if(eventAction) {
+        eventAction->SetInitialEnergy(recoilEnergy);
+    }
  //--------------------------------------------------------------
           if(fParticleGun->GetParticleDefinition() ==
      G4OpticalPhoton::OpticalPhotonDefinition())

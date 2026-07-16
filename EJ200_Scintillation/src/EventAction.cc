@@ -8,6 +8,8 @@
 #include "G4RunManager.hh"
 #include "G4Run.hh"
 
+#include <cstdlib>
+
 // EventAction::EventAction()
 //   : G4UserEventAction(), fPMTHCID(-1)
 // {}
@@ -15,7 +17,7 @@
 // EventAction::~EventAction()
 // {}
 //--------------------FOR ENERGY DEPOSIT AND COUNTS PER EVENT------------
-void EventAction::BeginOfEventAction(const G4Event*) {
+void EventAction::BeginOfEventAction(const G4Event* event) {
     // Reset counters at the start of every event
     fHitCount = 0;
     fTotalEnergy = 0.0;
@@ -38,13 +40,20 @@ void EventAction::EndOfEventAction(const G4Event* event) {
     // Fill the columns in the exact order defined in RunAction
     G4int localEventID = event->GetEventID();
 
+    // Read the pre-calculated offset from the bash environment
+     G4int offset = 0; 
+      if (const char* env_p = std::getenv("EVENT_OFFSET")) {
+        offset = std::stoi(env_p);
+      }
+     G4int globalEventID = localEventID + offset;
+
     //  Get the Run ID that you injected via sed
-    G4int runID = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
+    // G4int runID = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
 
     // Calculate the continuous Global Event ID
     // If iteration starts at 0: globalEventID = (runID * eventsPerRun) + localEventID
     // If iteration starts at 1: globalEventID = ((runID - 1) * eventsPerRun) + localEventID
-    G4int globalEventID = (runID * 100) + localEventID;
+    // G4int globalEventID = (runID * 100) + localEventID;
 
 
     analysisMan->FillNtupleIColumn(0,0, globalEventID);
@@ -52,7 +61,7 @@ void EventAction::EndOfEventAction(const G4Event* event) {
     analysisMan->FillNtupleIColumn(0,1, fHitCount);
     analysisMan->FillNtupleDColumn(0,2, fTotalEnergy);
     // analysisMan->FillNtupleDColumn(3, feachphotonEnergy);
-    // analysisMan->FillNtupleDColumn(3, fInitialEnergy); // From your SetInitialEnergy call
+    analysisMan->FillNtupleDColumn(0,3, fInitialEnergy); // From SetInitialEnergy call
 
     // Finalize the row
     analysisMan->AddNtupleRow(0);
